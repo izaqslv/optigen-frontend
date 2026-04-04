@@ -1,0 +1,18 @@
+# Ambientes virtuais
+.venv/
+.venv_train/
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+
+
+.idea/
+storage/
+
+# Sistema
+.DS_Store
+
