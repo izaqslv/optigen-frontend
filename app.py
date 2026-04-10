@@ -8,6 +8,7 @@ import tempfile
 from datetime import datetime
 from io import BytesIO
 from PIL import Image as PILImage
+import os
 
 UNIDADES = {
     "dens_susp": "g/cm³",
@@ -50,9 +51,10 @@ st.markdown("<br><br><br>", unsafe_allow_html=True)
 
 ### --- LOGIN LOCAL:
 # API_URL = "http://127.0.0.1:8010"  # ou localhost
-
 ### --- LOGIN NA PRODUÇÃO (ONLINE NO RENDER) >>> deploy:
-API_URL = "https://optigen.onrender.com"  # ou localhost
+# API_URL = "https://optigen.onrender.com"  # ou localhost
+## --- LOGIN GLOBAL:
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8010")
 
 # =========================
 # 🔐 CONTROLE DE LOGIN
