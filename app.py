@@ -1,11 +1,13 @@
 import streamlit as st
 import requests
 import base64
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image as RLImage
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
 import tempfile
 from datetime import datetime
+from io import BytesIO
+from PIL import Image as PILImage
 
 UNIDADES = {
     "dens_susp": "g/cm³",
@@ -47,10 +49,10 @@ st.set_page_config(
 st.markdown("<br><br><br>", unsafe_allow_html=True)
 
 ### --- LOGIN LOCAL:
-# API_URL = "http://127.0.0.1:8010"  # ou localhost
+API_URL = "http://127.0.0.1:8010"  # ou localhost
 
 ### --- LOGIN NA PRODUÇÃO (ONLINE NO RENDER) >>> deploy:
-API_URL = "https://optigen.onrender.com"  # ou localhost
+# API_URL = "https://optigen.onrender.com"  # ou localhost
 
 # =========================
 # 🔐 CONTROLE DE LOGIN
@@ -109,7 +111,7 @@ else:
     #         del st.session_state[key]
     #     st.rerun()
 
-    # =======================================================================================================================
+    # ==================================================================================================================
 
     # st.caption("💡 Para uma melhor experiência, ative o modo escuro")
 
@@ -174,7 +176,6 @@ else:
             unsafe_allow_html=True
         )
 
-
     # ===============================
     # SIDEBAR
     # ===============================
@@ -203,7 +204,6 @@ else:
     }
     </style>
     """, unsafe_allow_html=True)
-
 
     st.sidebar.markdown("<div style='height:50px'></div>", unsafe_allow_html=True)
     # Inserir botão logomarca na sidebar (desativar a linha abaixo se não desejar):
@@ -275,7 +275,7 @@ else:
 
         elements = []
         # LOGO
-        elements.append(Image("assets/logo_newgen_white.png", width=140, height=110))
+        elements.append(RLImage("assets/logo_newgen_white.png", width=140, height=110))
         elements.append(Spacer(1, 12))
 
         # TÍTULO
@@ -300,7 +300,7 @@ else:
                 elements.append(Paragraph(f"{k}: {v} {unidade}", styles["Normal"]))
             elements.append(Spacer(1, 12))
 
-        elements.append(Image(temp_img.name, width=400, height=250))
+        elements.append(RLImage(temp_img.name, width=400, height=250))
         elements.append(Spacer(1, 12))
 
         interpretacao = gerar_interpretacao(metadata)
@@ -335,7 +335,7 @@ else:
         elements = []
 
         # LOGO
-        elements.append(Image("assets/logo_newgen_white.png", width=140, height=110))
+        elements.append(RLImage("assets/logo_newgen_white.png", width=140, height=110))
         elements.append(Spacer(1, 12))
 
         # MARCA
@@ -363,7 +363,7 @@ else:
             temp_img.write(imagens[i])
             temp_img.close()
 
-            elements.append(Image(temp_img.name, width=400, height=250))
+            elements.append(RLImage(temp_img.name, width=400, height=250))
             elements.append(Spacer(1, 8))
 
             metadata = metadatas[i]
@@ -408,7 +408,7 @@ else:
             response = requests.get(
                 url,
                 params=params,
-                headers=headers,  # 🔥 AQUI!
+                headers=headers,
                 timeout=(60, 60)
             )
             response.raise_for_status()
@@ -483,11 +483,10 @@ else:
         unsafe_allow_html=True
     )
 
-
     # ===============================
     # MODO
     # ===============================
-    modo = st.radio("Modo", ["Individual", "Comparação"], horizontal=True)
+    modo = st.radio("Modo", ["Individual", "Comparação", "Análise Avançada"], horizontal=True)
 
     fluids = get_fluids()
 
@@ -495,7 +494,7 @@ else:
         st.stop()
 
     # ===============================
-    # INDIVIDUAL
+    # MODO INDIVIDUAL
     # ===============================
     if modo == "Individual":
 
@@ -594,7 +593,7 @@ else:
                     st.image(img_bytes, caption=f"h={h}")
 
     # ===============================
-    # COMPARAÇÃO
+    # MODO COMPARAÇÃO
     # ===============================
     if modo == "Comparação":
 
@@ -678,8 +677,60 @@ else:
                     "application/pdf"
                 )
 
+    # Novo endpoint em 09/04/2026:
+    # ===============================
+    # MODO ANÁLISE AVANÇADA
+    # ===============================
+    if modo == "Análise Avançada":
 
-    # RODAPÉ ------------------------------------------------------------------------------------------------------------
+        st.subheader("📊 Análise Estrutural Completa")
+
+        if st.button("🚀 Gerar análise completa + predição IA"):
+
+            with st.spinner("Executando modelo completo..."):
+
+                response = requests.get(
+                    f"{BASE_URL}/analysis/plots",
+                    headers=get_headers(),
+                    timeout=300
+                )
+
+                if response.status_code == 200:
+
+                    data = response.json()
+                    plots = data.get("plots", [])
+
+                    st.success("✔ Análise completa gerada com sucesso")
+
+                    cols = st.columns(2)
+
+                    for i, plot in enumerate(plots):
+                        filename = plot["filename"]
+                        img_base64 = plot["image"]
+
+                        # 🔥 decodifica base64
+                        img_bytes = base64.b64decode(img_base64)
+                        img = PILImage.open(BytesIO(img_bytes))
+
+                        with cols[i % 2]:
+                            # mostra imagem
+                            st.image(img, caption=filename, use_container_width=True)
+
+                            # botão download
+                            st.download_button(
+                                label="📥 Download",
+                                data=img_bytes,
+                                file_name=filename,
+                                mime="image/png"
+                            )
+
+                else:
+                    st.error("Erro ao gerar análise")
+
+
+
+
+# RODAPÉ----------------------------------------------------------------------------------------------------------------
     st.markdown(
         "<hr style='margin-top:80px; margin-bottom:5px;'>",
         unsafe_allow_html=True
@@ -690,3 +741,4 @@ else:
         "</p>",
         unsafe_allow_html=True
     )
+
