@@ -119,6 +119,8 @@ else:
 
     # ==================================================================================================================
 
+    # st.caption("💡 Para uma melhor experiência, ative o modo escuro")
+
     st.markdown(
         "<div style='margin-top:-140px;'>💡 Para uma melhor experiência, ative o modo escuro</div>",
         unsafe_allow_html=True
@@ -398,7 +400,6 @@ else:
         with open(temp_pdf.name, "rb") as f:
             return f.read()
 
-
     # NOVO BLOCO:
     # ==============================
     # 📄 PDF PREMIUM - OPTIGEN
@@ -544,7 +545,6 @@ else:
         doc.build(content)
 
         return file_path, file_name
-
 
     # ===============================
     # API (helpers)
@@ -753,7 +753,7 @@ else:
     # ===============================
     # MODO COMPARAÇÃO
     # ===============================
-    elif modo == "Comparação (experimental)":
+    if modo == "Comparação (experimental)":
 
         st.subheader("Comparação entre fluidos")
 
@@ -1078,25 +1078,9 @@ else:
         tempo_max = colD2.number_input("Tempo máximo (dia)", 50, key="cmp_tempo")
         n_alturas = colD3.number_input("Resolução", 20, key="cmp_res")
 
-        # =======================================================================================================
+        # =========================
         # EXECUÇÃO
-        # =======================================================================================================
-
-        # ========================
-        # 🎯 OBJETIVO DO PROCESSO
-        # ========================
-
-        st.markdown("### 🎯 Objetivo do Processo")
-
-        objetivo = st.selectbox(
-            "Selecione o objetivo da operação",
-            [
-                "Balanceado",
-                "Máxima clarificação",
-                "Máxima compactação",
-                "Estabilidade operacional"
-            ]
-        )
+        # =========================
         if st.button("🚀 Comparar Cenários"):
 
             def build_payload(dens_susp, dens_solids, teor, m, n):
@@ -1249,21 +1233,8 @@ else:
             """, unsafe_allow_html=True)
 
 
-            # =========================================================
-            # 🎨 CLASSIFICAÇÃO VISUAL (INDICADORES)
-            # =========================================================
-            def classificar_clarificacao(c):
-                if c is None:
-                    return "—"
-                elif c < 0.05:
-                    return "🟢 Excelente"
-                elif c < 0.1:
-                    return "🟡 Moderada"
-                else:
-                    return "🔴 Baixa"
-
-
             def calcular_metricas(df):
+                import numpy as np
 
                 resultados = {}
 
@@ -1313,12 +1284,7 @@ else:
 
             with col1:
                 st.markdown("### 🔵 Fluido A")
-                # st.metric("C topo final (v/v)", f"{met_A['C_top_final']:.4f}")
-                st.metric(
-                    "C topo final (v/v)",
-                    f"{met_A['C_top_final']:.4f}",
-                    classificar_clarificacao(met_A["C_top_final"])
-                )
+                st.metric("C topo final (v/v)", f"{met_A['C_top_final']:.4f}")
                 st.metric("C fundo final (v/v)", f"{met_A['C_bottom_final']:.4f}")
                 st.metric("Tempo de clarificação (dia)",
                           f"{met_A['tempo_clarificacao']}" if met_A['tempo_clarificacao'] else "—")
@@ -1326,12 +1292,7 @@ else:
 
             with col2:
                 st.markdown("### 🟢 Fluido B")
-                # st.metric("C topo final (v/v)", f"{met_B['C_top_final']:.4f}")
-                st.metric(
-                    "C topo final (v/v)",
-                    f"{met_B['C_top_final']:.4f}",
-                    classificar_clarificacao(met_B["C_top_final"])
-                )
+                st.metric("C topo final (v/v)", f"{met_B['C_top_final']:.4f}")
                 st.metric("C fundo final (v/v)", f"{met_B['C_bottom_final']:.4f}")
                 st.metric("Tempo de clarificação (dia)",
                           f"{met_B['tempo_clarificacao']}" if met_B['tempo_clarificacao'] else "—")
@@ -1350,40 +1311,12 @@ else:
             st.subheader("🧠 Ranking global (IA explicável)")
 
             try:
-                # =========================================================
-                # ⚖️ DEFINIÇÃO AUTOMÁTICA DE PESOS
-                # =========================================================
-
-                if objetivo == "Máxima clarificação":
-                    w_top = 3.0
-                    w_bottom = 1.0
-                    w_stability = 1.0
-
-                elif objetivo == "Máxima compactação":
-                    w_top = 1.0
-                    w_bottom = 3.0
-                    w_stability = 1.0
-
-                elif objetivo == "Estabilidade operacional":
-                    w_top = 1.0
-                    w_bottom = 1.0
-                    w_stability = 3.0
-
-                else:  # Balanceado
-                    w_top = 2.0
-                    w_bottom = 1.5
-                    w_stability = 1.0
-
-                st.caption(
-                    f"Pesos aplicados → Topo: {w_top} | Fundo: {w_bottom} | Estabilidade: {w_stability}"
-                )
-
                 # =========================
                 # ⚖️ PESOS (AJUSTÁVEL)
                 # =========================
-                # w_top = st.slider("Peso topo", 0.0, 5.0, 2.0)
-                # w_bottom = st.slider("Peso fundo", 0.0, 5.0, 1.5)
-                # w_stability = st.slider("Peso estabilidade", 0.0, 5.0, 1.0)
+                w_top = st.slider("Peso topo", 0.0, 5.0, 2.0)
+                w_bottom = st.slider("Peso fundo", 0.0, 5.0, 1.5)
+                w_stability = st.slider("Peso estabilidade", 0.0, 5.0, 1.0)
 
                 # =========================
                 # 🧮 SCORE GLOBAL
@@ -1421,18 +1354,15 @@ else:
                 # =========================
                 # 🔍 EXPLICAÇÃO (OURO!)
                 # =========================
-                # st.markdown("### 🔍 Por que esse resultado?")
-                st.markdown("### 🔍 Interpretação do Resultado")
-
-                st.write(f"O resultado foi avaliado com foco em: **{objetivo}**")
+                st.markdown("### 🔍 Por que esse resultado?")
 
                 exp = []
 
                 # TOPO
                 if met_A["C_top_final"] < met_B["C_top_final"]:
-                    exp.append("🔹 Fluido A apresenta maior eficiência na redução de concentração no topo (melhor clarificação)")
+                    exp.append("🔹 Fluido A apresenta melhor clarificação no topo")
                 elif met_B["C_top_final"] < met_A["C_top_final"]:
-                    exp.append("🔹 Fluido B apresenta maior eficiência na redução de concentração no topo (melhor clarificação)")
+                    exp.append("🔹 Fluido B apresenta melhor clarificação no topo")
 
                 # FUNDO
                 if met_A["C_bottom_final"] > met_B["C_bottom_final"]:
