@@ -55,10 +55,14 @@ st.markdown("<br><br><br>", unsafe_allow_html=True)
 
 ### --- LOGIN LOCAL:
 # API_URL = "http://127.0.0.1:8010"  # ou localhost
-### --- LOGIN NA PRODUÇÃO (ONLINE NO RENDER) >>> deploy:
-# API_URL = "https://optigen.onrender.com"  # ou localhost
+
+## --- LOGIN NA PRODUÇÃO (ONLINE NO RENDER) >>> deploy:
+API_URL = "https://optigen.onrender.com"
+st.write("DEBUG API_URL:", API_URL)
+
 ## --- LOGIN GLOBAL:
-API_URL = os.getenv("API_URL", "http://127.0.0.1:8010")
+# # API_URL = os.getenv("API_URL", "http://127.0.0.1:8010")
+# API_URL = st.secrets.get("API_URL", "http://127.0.0.1:8010")
 
 # =========================
 # 🔐 CONTROLE DE LOGIN
@@ -91,13 +95,23 @@ if st.session_state.token is None:
                 timeout=60
             )
 
+            # if response.status_code == 200:
+            #     token = response.json()["access_token"]
+            #     st.session_state.token = token
+            #     st.success("Login realizado!")
+            #     st.rerun()
+            # else:
+            #     st.error("Credenciais inválidas")
+            #     st.error(f"Erro {response.status_code}")  # debug (apagar depois)
+            #     st.text(response.text) # debug (apagar depois)
             if response.status_code == 200:
                 token = response.json()["access_token"]
                 st.session_state.token = token
                 st.success("Login realizado!")
                 st.rerun()
             else:
-                st.error("Credenciais inválidas")
+                st.error(f"Erro {response.status_code}")
+                st.text(response.text)
 
 # =========================
 # 🚀 SISTEMA PRINCIPAL
