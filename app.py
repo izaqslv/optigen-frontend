@@ -58,7 +58,7 @@ st.markdown("<br><br><br>", unsafe_allow_html=True)
 
 ## ------------------- LOGIN NA PRODUÇÃO (ONLINE NO RENDER) >>> deploy:
 API_URL = "https://optigen.onrender.com"
-st.write("DEBUG API_URL:", API_URL)
+# st.write("DEBUG API_URL:", API_URL)
 
 ## --- LOGIN GLOBAL:
 # # API_URL = os.getenv("API_URL", "http://127.0.0.1:8010")
