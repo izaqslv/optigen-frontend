@@ -176,7 +176,7 @@ else:
             "<div style='margin-top:-100px;'>"
             "<h1 style='margin-bottom:5px;'>🔬 OptiGen</h1>"
             "<p style='font-size:20px; margin-top:-20px; margin-bottom:5px;'>"
-            "Soluções Inteligentes em Engenharia de Fluidos"
+            "Plataforma de Inteligência e Otimização em Engenharia Industrial Modular" #Soluções Inteligentes em Engenharia de Fluidos
             "</p>"
             "<p style='color:gray; font-size:14px; margin-top:-5px;'>"
             "by NewGen Intelligent Engineering Solutions"
