@@ -57,11 +57,11 @@ st.markdown("<br><br><br>", unsafe_allow_html=True)
 # API_URL = "http://127.0.0.1:8010"  # ou localhost
 
 ## ------------------- LOGIN NA PRODUÇÃO (ONLINE NO RENDER) >>> deploy:
-API_URL = "https://optigen.onrender.com"
+# API_URL = "https://optigen.onrender.com"
 # st.write("DEBUG API_URL:", API_URL)
 
 ## --- LOGIN GLOBAL:
-# # API_URL = os.getenv("API_URL", "http://127.0.0.1:8010")
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8010")
 # API_URL = st.secrets.get("API_URL", "http://127.0.0.1:8010")
 
 # =========================
@@ -95,15 +95,6 @@ if st.session_state.token is None:
                 timeout=60
             )
 
-            # if response.status_code == 200:
-            #     token = response.json()["access_token"]
-            #     st.session_state.token = token
-            #     st.success("Login realizado!")
-            #     st.rerun()
-            # else:
-            #     st.error("Credenciais inválidas")
-            #     st.error(f"Erro {response.status_code}")  # debug (apagar depois)
-            #     st.text(response.text) # debug (apagar depois)
             if response.status_code == 200:
                 token = response.json()["access_token"]
                 st.session_state.token = token
@@ -472,7 +463,7 @@ else:
         # ==============================
         logo_path = "assets/logo_newgen_white.png"
         if os.path.exists(logo_path):
-            content.append(RLImage(logo_path, width=120, height=60))
+            content.append(RLImage(logo_path, width=140, height=110)) # width=120, height=60
 
         content.append(Spacer(1, 12))
 
@@ -656,7 +647,8 @@ else:
         ["Individual (experimental)",
          "Comparação (experimental)",
          "Simulação Inteligente - IA",
-         "Simulação: Fluido A vs Fluido B - IA"],
+         "Simulação: Fluido A vs Fluido B - IA",
+         "Agente de IA - Instruções de Trabalho (IT)"],
         horizontal=True
     )
 
@@ -730,8 +722,7 @@ else:
 
                 st.info(f"""
                 - Fluido {fluid_id} apresenta tendência de estabilização ao longo do tempo.
-                - Observa-se comportamento típico de sedimentação controlada.
-                - Diferenças entre modelo e experimental indicam boa aderência da rede neural.
+                - Observa-se comportamento típico de sedimentação controlada.                
                 """)
 
                 # HISTÓRICO
@@ -827,7 +818,6 @@ else:
                     st.info(f"""
                                 - Fluido {fid} apresenta tendência de estabilização ao longo do tempo.
                                 - Observa-se comportamento típico de sedimentação controlada.
-                                - Diferenças entre modelo e experimental indicam boa aderência da rede neural.
                                 """)
 
                     # HISTÓRICO
@@ -950,7 +940,7 @@ else:
                 df_profile = pd.DataFrame(data.get("perfil_t0", []))
 
                 if not df_profile.empty:
-                    st.subheader("📊 Perfil inicial (t=0)")
+                    st.subheader("📊 Perfil inicial (em t=0) com c(v/v) vs. h(cm)")
                     st.line_chart(df_profile.set_index("altura")["concentracao"])
                 else:
                     st.warning("Sem dados para perfil inicial")
@@ -961,7 +951,7 @@ else:
                 df_top = pd.DataFrame(data.get("curva_topo", []))
 
                 if not df_top.empty:
-                    st.subheader("📈 Evolução no topo")
+                    st.subheader("📈 Evolução no topo com c(v/v) vs. t(dia)")
                     st.line_chart(df_top.set_index("tempo")["concentracao"])
                 else:
                     st.warning("Sem dados para curva do topo")
@@ -972,7 +962,7 @@ else:
                 df_bottom = pd.DataFrame(data.get("curva_fundo", []))
 
                 if not df_bottom.empty:
-                    st.subheader("📉 Evolução no fundo")
+                    st.subheader("📉 Evolução no fundo com c(v/v) vs. t(dia)")
                     st.line_chart(df_bottom.set_index("tempo")["concentracao"])
                 else:
                     st.warning("Sem dados para curva do fundo")
@@ -983,7 +973,7 @@ else:
                 df_interface = pd.DataFrame(data.get("interface", []))
 
                 if not df_interface.empty:
-                    st.subheader("🧠 Evolução da Interface")
+                    st.subheader("🧠 Evolução da Interface de Sedimentação, com h_interface(cm) vs. t(dia)")
                     st.line_chart(df_interface.set_index("tempo")["altura_interface"])
                 else:
                     st.warning("Sem dados de interface")
@@ -1393,13 +1383,6 @@ else:
                 )
 
                 # =========================
-                # ⚖️ PESOS (AJUSTÁVEL)
-                # =========================
-                # w_top = st.slider("Peso topo", 0.0, 5.0, 2.0)
-                # w_bottom = st.slider("Peso fundo", 0.0, 5.0, 1.5)
-                # w_stability = st.slider("Peso estabilidade", 0.0, 5.0, 1.0)
-
-                # =========================
                 # 🧮 SCORE GLOBAL
                 # =========================
                 score_A = (
@@ -1643,6 +1626,136 @@ else:
 
                 except Exception as e:
                     st.error(f"Erro ao gerar PDF: {e}")
+
+
+
+    # ==================================================================================================================
+    # 📝 MODO Agente de IA - Instruções de Trabalho (IT)
+    # ==================================================================================================================
+    elif modo == "Agente de IA - Instruções de Trabalho (IT)":
+
+        def render_it_module(API_URL, headers):
+            st.markdown("<h2 style='text-align: center;'>📝 Agente de Inteligência Operacional</h2>",
+                        unsafe_allow_html=True)
+            st.markdown(
+                "<p style='text-align: center; color: gray;'>Padrão Industrial Alumar - Gestão de Conhecimento e Segurança</p>",
+                unsafe_allow_html=True)
+            st.markdown("---")
+
+            # --- INGESTÃO DE DADOS ---
+            st.markdown("### 📥 Ingestão de Dados Multimodal")
+            tabs = st.tabs(["📄 Documentos (PDF/Word)", "🎙️ Áudio / Vídeo", "⌨️ Texto / Transcrição"])
+
+            with tabs[0]:
+                st.info("💡 Arraste manuais técnicos ou normas para converter em IT.")
+                doc_file = st.file_uploader("Carregar Documento", type=["pdf", "docx"], key="doc_up")
+
+            with tabs[1]:
+                st.info("💡 Suba relatos de campo ou vídeos de execução de tarefas.")
+                media_file = st.file_uploader("Carregar Mídia", type=["mp3", "wav", "mp4", "mov", "m4a"],
+                                              key="media_up")
+
+            with tabs[2]:
+                text_content = st.text_area("Descreva a atividade detalhadamente:", height=200,
+                                            placeholder="Ex: Procedimento para manutenção preventiva da bomba de vácuo...")
+
+            filename_prefix = st.text_input("Nome sugerido para a IT", value="IT_Nova_Atividade")
+
+            # Lógica de seleção do arquivo para envio
+            final_file = None
+            if doc_file:
+                final_file = doc_file
+            elif media_file:
+                final_file = media_file
+            elif text_content:
+                import io
+                final_file = io.BytesIO(text_content.encode('utf-8'))
+                final_file.name = "input.txt"
+
+            # --- BOTÃO DE PROCESSAMENTO ---
+            if st.button("🚀 Processar e Gerar IT Oficial", use_container_width=True, type="primary"):
+                if not final_file:
+                    st.warning("Por favor, forneça uma entrada (arquivo ou texto).")
+                else:
+                    with st.spinner("🤖 O Agente OptiGen está analisando e estruturando a IT..."):
+                        try:
+                            files = {"file": (final_file.name, final_file, "application/octet-stream")}
+                            data = {"filename_prefix": filename_prefix}
+
+                            # Chamada para o endpoint atualizado
+                            response = requests.post(
+                                f"{API_URL}/it/generate",
+                                files=files,
+                                data=data,
+                                headers=headers,
+                                timeout=300
+                            )
+
+                            if response.status_code == 200:
+                                st.session_state.current_it = response.json()
+                                st.success("✅ Processamento concluído!")
+                            else:
+                                st.error(f"Erro no servidor: {response.text}")
+                        except Exception as e:
+                            st.error(f"Erro de conexão: {e}")
+
+            # --- EXIBIÇÃO DOS RESULTADOS ---
+            if "current_it" in st.session_state:
+                res = st.session_state.current_it
+                it = res["data"]
+                pdf_url = res["pdf_url"]
+                word_url = res.get("word_url", "")  # Pega a nova URL do Word se existir
+
+                st.markdown("---")
+                st.markdown(f"### 📋 IT Gerada: {it['titulo']}")
+
+                # Matriz de Segurança
+                c1, c2, c3 = st.columns(3)
+                with c1:
+                    st.error("**🚨 RISCOS**\n\n" + "\n".join([f"- {r}" for r in it['matriz_seguranca']['riscos']]))
+                with c2:
+                    st.success("**✅ CONTROLES CRÍTICOS**\n\n" + "\n".join(
+                        [f"- {c}" for c in it['matriz_seguranca']['controles_criticos']]))
+                with c3:
+                    st.warning("**⚠️ CRITÉRIOS DE PARADA**\n\n" + "\n".join(
+                        [f"- {p}" for p in it['matriz_seguranca']['criterios_parada']]))
+
+                # Fluxo de Trabalho
+                with st.expander("👁️ Ver Fluxo de Execução Detalhado", expanded=True):
+                    for step in it['fluxo_execucao']:
+                        st.markdown(f"**Passo {step['passo_n']}: {step['o_que_fazer']}**")
+                        st.info(f"**Como:** {step['como_fazer']}\n\n**Por que:** {step['por_que_fazer']}")
+                        st.caption(f"🛡️ Controles de Segurança: {', '.join(step['medidas_controle'])}")
+                        st.markdown("---")
+
+                # --- DOWNLOADS ---
+                st.markdown("### 📥 Baixar Documentos Oficiais")
+                col_pdf, col_word = st.columns(2)
+
+                with col_pdf:
+                    full_pdf_url = f"{API_URL}{pdf_url}"
+                    st.markdown(f"""
+                        <a href="{full_pdf_url}" target="_blank" style="text-decoration: none;">
+                            <button style="background-color: #E50914; color: white; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%;">
+                                📕 Baixar em PDF
+                            </button>
+                        </a>
+                    """, unsafe_allow_html=True)
+
+                with col_word:
+                    if word_url:
+                        full_word_url = f"{API_URL}{word_url}"
+                        st.markdown(f"""
+                            <a href="{full_word_url}" target="_blank" style="text-decoration: none;">
+                                <button style="background-color: #2B579A; color: white; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%;">
+                                    📘 Baixar em Word (Editável)
+                                </button>
+                            </a>
+                        """, unsafe_allow_html=True)
+
+
+        # Chamada da função para renderizar na tela
+        render_it_module(API_URL, get_headers())
 
     # RODAPÉ-------------------------------------------------------------------------------
     st.markdown(
