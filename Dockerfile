@@ -21,5 +21,5 @@ EXPOSE 8501
 
 # 7. Comando para rodar o Streamlit
 # O --server.address=0.0.0.0 é obrigatório para rodar na nuvem
-#CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+#CMD ["streamlit", "run", "app_old.py", "--server.port=8501", "--server.address=0.0.0.0"]
 CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.enableCORS=false", "--server.enableXsrfProtection=false"]

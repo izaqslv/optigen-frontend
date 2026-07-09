@@ -9,6 +9,12 @@ __pycache__/
 *.pyd
 .env
 
+.Dockerfile
+.dockerignore
+
+test_auth.py
+optigen.db
+*.db
 
 .idea/
 storage/
